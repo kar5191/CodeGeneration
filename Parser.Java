@@ -26,6 +26,8 @@ public class Parser {
   private static int currentToken;
 
   private static Gui gui;
+  
+  private static int label_count=1;
 
   public static DefaultMutableTreeNode run(Vector<Token> t,Gui gui) {
 
@@ -403,12 +405,14 @@ public class Parser {
   
   private static boolean rule_while(DefaultMutableTreeNode parent)
   {
+	  
 	  boolean error=false;
 	  DefaultMutableTreeNode node;
 	 // System.out.println("Inside While");
 	  node=new DefaultMutableTreeNode("while");
 	  parent.add(node);
 	  currentToken++;
+	 // line_no1=getlineno();
 	  if(currentToken<tokens.size()&&tokens.get(currentToken).getWord().equals("("))
 	  {
 		  node=new DefaultMutableTreeNode("(");
@@ -446,9 +450,17 @@ public class Parser {
 		  }
 		  
 	  }
+	  CodeGenerator.addInstruction("JMC", "e"+label_count, "false");
+	  label_count++;
 	  node=new DefaultMutableTreeNode("PROGRAM");
 	  parent.add(node);
-	  error=rule_program(node);                   
+	  error=rule_program(node); 
+	 // line_no2=getlineno();
+	  //CodeGenerator.addLabel("e"+label_count,line_no2);
+	  
+	  CodeGenerator.addInstruction("JMP", "e"+label_count, "0");
+	  //CodeGenerator.addLabel("e"+label_count,line_no1);
+	  label_count++;
 	  return error;
   }
   
@@ -497,6 +509,8 @@ public class Parser {
 			  currentToken++;
 	  }
 	  
+	  CodeGenerator.addInstruction("JMC", "e"+label_count, "false");
+	  label_count++;
 	  node=new DefaultMutableTreeNode("PROGRAM");
 	  parent.add(node);
 	  error=rule_program(node);
@@ -507,7 +521,9 @@ public class Parser {
 		  parent.add(node);          
 		  currentToken++;          
 		  node=new DefaultMutableTreeNode("PROGRAM");
-		  parent.add(node);          
+		  parent.add(node);
+		  CodeGenerator.addInstruction("JMP", "e"+label_count, "0");
+		  label_count++;
 		  error=rule_program(node);         
 	  }
 	  return error;       
